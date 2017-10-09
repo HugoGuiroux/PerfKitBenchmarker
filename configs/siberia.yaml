@@ -1,0 +1,80 @@
+static_vms:
+  - &target
+    ip_address: mc6
+    internal_ip: erods-mc-6.u-ga.fr
+    user_name: root
+    ssh_private_key: /home/hugo/.ssh/id_rsa
+    zone: MC1
+    os_type: ubuntu_container
+    disk_specs:
+      - disk_type: none
+#      - mount_point: /scratch
+
+  - &injector
+    ip_address: mc1
+    internal_ip: erods-mc-1.u-ga.fr
+    user_name: root
+    ssh_private_key: /home/hugo/.ssh/id_rsa
+    zone: MC6
+    os_type: ubuntu_container
+
+default_disk: &default_disk
+  static_vms:
+    disk_type: local
+
+ping: &ping_config
+  vm_groups:
+    vm_1:
+      static_vms:
+        - *target
+    vm_2:
+      static_vms:
+        - *injector
+
+iperf: &iperf_config
+  vm_groups:
+    vm_1:
+      static_vms:
+        - *target
+    vm_2:
+      static_vms:
+        - *injector
+
+kernel_compile: &kernel_config
+  vm_groups:
+    default:
+      static_vms:
+        - *target
+
+# Do not work inside the container, g++-5 cannot be installed on ubuntu 14.04 as is
+blazemark: &blazemark_config
+  vm_groups:
+    default:
+      static_vms:
+        - *target
+
+aerospike_ycsb: &aerospike_ycsb_config
+  vm_groups:
+    workers:
+      vm_count: 1
+      disk_count: 0
+      static_vms:
+        - *target
+    clients:
+      static_vms:
+        - *injector
+
+cassandra_ycsb: &cassandra_ycsb_config
+  vm_groups:
+    workers:
+      vm_count: null
+      disk_count: 0
+      static_vms:
+        - *target
+        - *target
+        - *target
+    clients:
+      vm_count: null
+      disk_count: 0
+      static_vms:
+        - *injector

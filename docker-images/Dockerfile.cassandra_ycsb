@@ -1,0 +1,24 @@
+FROM hugoguiroux/perfkit-ycsb:latest
+
+# ant
+ENV ANT_HOME_DIR ${INSTALL_DIR}/ant
+ENV ANT_TAR_URL https://archive.apache.org/dist/ant/binaries/apache-ant-1.9.6-bin.tar.gz
+RUN apt-get install -y wget && \
+	mkdir -p ${INSTALL_DIR} && \
+	cd ${INSTALL_DIR} && \
+	wget ${ANT_TAR_URL} && \
+	tar -zxf apache-ant-1.9.6-bin.tar.gz && \
+	ln -s ${INSTALL_DIR}/apache-ant-1.9.6/ ${ANT_HOME_DIR}
+
+# build-tools
+RUN apt-get install -y build-essential git libtool autoconf automake
+
+# openjdk
+RUN apt-get install -y openjdk-7-jdk
+
+# curl
+RUN apt-get install -y curl
+
+# cassandra
+COPY docker-images/cassandra.sh ${INSTALL_DIR}/cassandra.sh
+RUN chmod +x ${INSTALL_DIR}/cassandra.sh && ${INSTALL_DIR}/cassandra.sh

@@ -299,7 +299,9 @@ def GetStaticVmClass(os_type):
 
 class ContainerizedStaticVirtualMachine(
         StaticVirtualMachine, linux_virtual_machine.ContainerizedDebianMixin):
-    pass
+  def AddMetadata(self, **kwargs):
+    # Call the AddMetadata function of the container implementation
+    linux_virtual_machine.ContainerizedDebianMixin.AddMetadata(self, **kwargs)
 
 
 class DebianBasedStaticVirtualMachine(StaticVirtualMachine,

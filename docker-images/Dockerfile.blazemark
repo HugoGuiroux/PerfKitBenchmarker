@@ -1,0 +1,30 @@
+FROM hugoguiroux/perfkit-base:latest
+# g++-5
+RUN apt-get install -y software-properties-common && \
+    add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
+    apt-get update && \
+	apt-get install -y g++-5
+
+# build-tools
+RUN apt-get install -y build-essential git libtool autoconf automake
+
+# boost
+RUN apt-get install -y libboost-all-dev
+
+RUN mkdir -p /tmp/pkb/
+
+# blaze
+RUN apt-get -y install wget
+COPY docker-images/blaze.sh /tmp/pkb/
+COPY perfkitbenchmarker/data/blaze_config.j2 /tmp/pkb/blaze_config.j2
+RUN chmod +x /tmp/pkb/blaze.sh && /tmp/pkb/blaze.sh
+
+# lapack
+RUN apt-get install -y gfortran cmake
+COPY docker-images/lapack.sh /tmp/pkb/
+RUN chmod +x /tmp/pkb/lapack.sh && /tmp/pkb/lapack.sh
+
+# blazemark
+COPY docker-images/blazemark.sh /tmp/pkb/
+COPY perfkitbenchmarker/data/blazemark_config.j2 /tmp/pkb/blazemark_config.j2
+RUN chmod +x /tmp/pkb/blazemark.sh && /tmp/pkb/blazemark.sh

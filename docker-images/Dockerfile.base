@@ -1,0 +1,2 @@
+FROM ubuntu:trusty-20161006
+RUN apt-get update -y && apt-get install -y python2.7

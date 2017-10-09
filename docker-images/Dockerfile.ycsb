@@ -1,0 +1,11 @@
+FROM hugoguiroux/perfkit-base:latest
+
+ENV YCSB_VERSION 0.9.0
+ENV YCSB_TAR_URL https://github.com/brianfrankcooper/YCSB/releases/download/${YCSB_VERSION}/ycsb-${YCSB_VERSION}.tar.gz
+ENV INSTALL_DIR /opt/pkb
+
+RUN apt-get install -y openjdk-7-jdk curl
+RUN mkdir -p ${INSTALL_DIR}/ycsb && \
+	curl -L ${YCSB_TAR_URL} | tar -C ${INSTALL_DIR}/ycsb --strip-components=1 -xzf -
+
+RUN apt-get install -y python

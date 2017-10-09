@@ -1,0 +1,16 @@
+FROM hugoguiroux/perfkit-ycsb:latest
+
+# build-tools
+RUN apt-get install -y build-essential git libtool autoconf automake
+
+# lua5_1
+RUN apt-get install -y lua5.1 liblua5.1-dev
+
+# openssl
+RUN apt-get install -y openssl libssl-dev
+
+# aerospike
+COPY docker-images/aerospike_server.sh ${INSTALL_DIR}
+COPY perfkitbenchmarker/data/aerospike.conf.j2 ${INSTALL_DIR}/aerospike.conf.j2
+RUN chmod +x ${INSTALL_DIR}/aerospike_server.sh && ${INSTALL_DIR}/aerospike_server.sh
+EXPOSE 3003

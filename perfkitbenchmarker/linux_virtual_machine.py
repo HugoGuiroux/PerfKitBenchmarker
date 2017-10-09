@@ -917,7 +917,17 @@ class ContainerizedDebianMixin(DebianMixin):
   """
 
   OS_TYPE = os_types.UBUNTU_CONTAINER
-  BASE_DOCKER_IMAGE = 'ubuntu:trusty-20161006'
+  BASE_DOCKER_IMAGE = 'hugoguiroux/perfkit-base'
+  BENCHMARK_DOCKER_IMAGES = {
+    'iperf': 'hugoguiroux/perfkit-iperf',
+    'blazemark': 'hugoguiroux/perfkit-blazemark',
+    'aerospike_ycsb': 'hugoguiroux/perfkit-aerospike_ycsb',
+    'cassandra_ycsb': 'hugoguiroux/perfkit-cassandra_ycsb',
+  }
+
+  def __init__(self):
+    super(ContainerizedDebianMixin, self).__init__()
+    self._apt_updated = True
 
   def _CheckDockerExists(self):
     """Returns whether docker is installed or not."""
@@ -948,6 +958,7 @@ class ContainerizedDebianMixin(DebianMixin):
   def InitDocker(self):
     """Initializes the docker container daemon."""
     init_docker_cmd = ['sudo docker run -d '
+                       '--rm '
                        '--net=host '
                        '--workdir=%s '
                        '-v %s:%s ' % (CONTAINER_WORK_DIR,
@@ -955,7 +966,9 @@ class ContainerizedDebianMixin(DebianMixin):
                                       CONTAINER_MOUNT_DIR)]
     for sd in self.scratch_disks:
       init_docker_cmd.append('-v %s:%s ' % (sd.mount_point, sd.mount_point))
-    init_docker_cmd.append('%s sleep infinity ' % self.BASE_DOCKER_IMAGE)
+
+    img = self.BENCHMARK_DOCKER_IMAGES.get(self.benchmark, self.BASE_DOCKER_IMAGE)
+    init_docker_cmd.append('%s sleep infinity ' % img)
     init_docker_cmd = ''.join(init_docker_cmd)
 
     resp, _ = self.RemoteHostCommand(init_docker_cmd)
@@ -1065,6 +1078,36 @@ class ContainerizedDebianMixin(DebianMixin):
     # Copies the file to its final destination in the container
     target.ContainerCopy(file_name, remote_path)
 
+  def SnapshotPackages(self):
+    """Grabs a snapshot of the currently installed packages."""
+    pass
+
+  def RestorePackages(self):
+    """Restores the currently installed packages to those snapshotted."""
+    # This is a docker image, already deleted the instance
+    pass
+
+  def PackageCleanup(self):
+    """Cleans up all installed packages.
+
+    Deletes the temp directory, restores packages, and uninstalls all
+    PerfKit packages.
+    """
+    # This is a docker image, just stop it (launched with --rm)
+    if self.docker_id:
+      command = "sudo docker stop %s" % (self.docker_id)
+      return self.RemoteHostCommand(command)
+
+  def AddMetadata(self, **kwargs):
+    # Remember the benchmark name to get the right docker image
+    self.benchmark = kwargs['benchmark']
+
+  def InstallPackages(self, packages):
+    """Noop install packages, everything is already inside the docker image."""
+    pass
+
+  def Install(self, package):
+    pass
 
 class JujuMixin(DebianMixin):
   """Class to allow running Juju-deployed workloads.

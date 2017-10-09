@@ -212,6 +212,8 @@ def _Configure(vm):
 
 def _Install(vm):
   """Install blazemark."""
+  if type(vm).__name__ == "ContainerizedStaticVirtualMachine":
+    return
   for package in ['g++5', 'build_tools', 'boost', 'blaze', 'lapack']:
     vm.Install(package)
   _Configure(vm)
